@@ -2,34 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class AuthorController extends Controller
 {
-    public $authors = [
-        [
-            'id' => '1',
-            'name' => 'J.R.R. Tolkien',
-            'bio' => 'English writer, poet, and university professor, best known for The Lord of the Rings.',
-            'nationality' => 'British',
-        ],
-        [
-            'id' => '2',
-            'name' => 'Jane Austen',
-            'bio' => 'English novelist known for her realism and social commentary in works like Pride and Prejudice.',
-            'nationality' => 'British',
-        ],
-    ];
-
     public function index()
     {
         return response()->json([
             'message' => 'Successful',
-            'data' => $this->authors
+            'data' => Author::all(),
         ], 200);
     }
 
+    // You can rename to 'create' if you're using custom routes
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -38,18 +24,17 @@ class AuthorController extends Controller
             'nationality' => 'required|string',
         ]);
 
-        $newAuthor = array_merge($validated, ['id' => Str::uuid()->toString()]);
-        $this->authors[] = $newAuthor;
+        $author = Author::create($validated);
 
         return response()->json([
-            'message' => 'Author added (fake, no DB)',
-            'data' => $newAuthor,
+            'message' => 'Author added successfully',
+            'data' => $author,
         ], 201);
     }
 
     public function show(string $id)
     {
-        $author = collect($this->authors)->firstWhere('id', $id);
+        $author = Author::find($id);
 
         if ($author) {
             return response()->json(['message' => 'Author found', 'data' => $author], 200);
@@ -60,31 +45,38 @@ class AuthorController extends Controller
 
     public function update(Request $request, string $id)
     {
+        $author = Author::find($id);
+
+        if (!$author) {
+            return response()->json(['message' => 'Author not found'], 404);
+        }
+
         $validated = $request->validate([
             'name' => 'sometimes|required|string',
             'bio' => 'sometimes|required|string',
             'nationality' => 'sometimes|required|string',
         ]);
 
-        foreach ($this->authors as &$author) {
-            if ($author['id'] === $id) {
-                $author = array_merge($author, $validated);
-                return response()->json(['message' => 'Author updated', 'data' => $author], 200);
-            }
-        }
+        $author->update($validated);
 
-        return response()->json(['message' => 'Author not found'], 404);
+        return response()->json([
+            'message' => 'Author updated successfully',
+            'data' => $author,
+        ]);
     }
 
     public function destroy(string $id)
     {
-        $initialCount = count($this->authors);
-        $this->authors = array_filter($this->authors, fn($author) => $author['id'] !== $id);
+        $author = Author::find($id);
 
-        if (count($this->authors) < $initialCount) {
-            return response()->json(['message' => 'Author deleted'], 200);
+        if (!$author) {
+            return response()->json(['message' => 'Author not found'], 404);
         }
 
-        return response()->json(['message' => 'Author not found'], 404);
+        $author->delete();
+
+        return response()->json([
+            'message' => 'Author deleted successfully',
+        ]);
     }
 }

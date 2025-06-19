@@ -2,125 +2,82 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-
 
 class BookController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-   
-    public $books = [
-        [
-            'id' => '1',
-            'title' => 'The Hobbit',
-            'author' => 'J.R.R. Tolkien',
-            'published_year' => '1937',
-            'genre' => 'Fantasy',
-            'summary' => 'A hobbit embarks on a journey to win a share of a treasure guarded by a dragon.',
-        ],
-        [
-            'id' => '2',
-            'title' => 'Pride and Prejudice',
-            'author' => 'Jane Austen',
-            'published_year' => '1813',
-            'genre' => 'Romance',
-            'summary' => 'A story about manners, upbringing, morality, and marriage in 19th century England.',
-        ],
-
-    ];
-
+    // List all books with pagination
     public function index()
     {
         return response()->json([
-            'message' => 'successful',
-            'Data' => $this->books
-
+            'message' => 'Books retrieved successfully',
+            'data' => Book::all(),
         ], 200);
     }
 
- 
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Create new book with validation
     public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string',
-            'authorId' => 'required|string',
-            'isbn' => 'required|string',
+            'author_id' => 'required|exists:authors,id',  // foreign key check
+            'isbn' => 'required|string|unique:books,isbn',
             'published_year' => 'required|integer',
             'genre' => 'required|string',
             'summary' => 'required|string',
         ]);
 
-        $newBook = array_merge($validated, ['id' => Str::uuid()->toString()]);
-        $this->books[] = $newBook; 
+        $book = Book::create($validated);
 
         return response()->json([
-            'message' => 'Book added (fake, no DB)',
-            'data' => $newBook,
+            'message' => 'Book created successfully',
+            'data' => $book,
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Show one book, route model binding auto-finds or 404s
+    public function show($id)
     {
-        $book = collect($this->books)->firstWhere('id', $id);
-
-        if ($book) {
-            return response()->json(['message' => 'Book found', 'data' => $book], 200);
-        }
-
-        return response()->json(['message' => 'Book not found'], 404);
-    }
-
- 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $book = collect($this->books)->firstWhere('id', $id);
-
+        $book = Book::find($id);
         if (!$book) {
             return response()->json(['message' => 'Book not found'], 404);
         }
 
-        $updatedBook = array_merge($book, $request->only([
-            'title',
-            'authorId',
-            'isbn',
-            'published_year',
-            'genre',
-            'summary'
-        ]));
+        return response()->json([
+            'message' => 'Book found',
+            'data' => $book->toArray(),
+        ], 200);
+    }
+
+
+    // Update existing book with validation
+    public function update(Request $request, Book $book)
+    {
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string',
+            'author_id' => 'sometimes|required|exists:authors,id',
+            'isbn' => 'sometimes|required|string|unique:books,isbn,' . $book->id,
+            'published_year' => 'sometimes|required|integer',
+            'genre' => 'sometimes|required|string',
+            'summary' => 'sometimes|required|string',
+        ]);
+
+        $book->update($validated);
 
         return response()->json([
-            'message' => 'Book updated (simulated)',
-            'data' => $updatedBook,
+            'message' => 'Book updated successfully',
+            'data' => $book,
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    // Delete a book
+    public function destroy(Book $book)
     {
-        $book = collect($this->books)->firstWhere('id', $id);
-
-        if (!$book) {
-            return response()->json(['message' => 'Book not found'], 404);
-        }
+        $book->delete();
 
         return response()->json([
-            'message' => 'Book deleted (simulated)',
-            'data' => $book,
+            'message' => 'Book deleted successfully',
         ]);
     }
 }
