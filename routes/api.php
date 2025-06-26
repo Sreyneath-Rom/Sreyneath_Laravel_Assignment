@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\UserController;
+use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,26 +19,26 @@ use Illuminate\Support\Facades\Route;
 */
 //book route
 Route::prefix('/books')->group(function(){
-    Route::get('/',[BookController::class, 'index']);
+    Route::get('/',[BookController::class, 'index'])->name('/allbooks');
+    Route::post('/create', [BookController::class, 'create']);
     Route::get('/show/{id}', [BookController::class, 'show']);   
-    Route::post('/store', [BookController::class, 'store']);
     Route::put('/update/{id}', [BookController::class, 'update']);
     Route::delete('/destroy/{id}', [BookController::class, 'destroy']);
 });
 //end
 
 Route::prefix('/authors')->group(function () {
-    Route::get('/', [AuthorController::class, 'index']);
-    Route::get('/show/{id}', [AuthorController::class, 'show']);
-    Route::post('/store', [AuthorController::class, 'store']);
+    Route::get('/', [AuthorController::class, 'index'])->name('/allauthors');
+    Route::post('/create', [AuthorController::class, 'create']);
+    Route::get('/show/{id}', [AuthorController::class, 'show']); 
     Route::put('/update/{id}', [AuthorController::class, 'update']);
     Route::delete('/destroy/{id}', [AuthorController::class, 'destroy']);
 });
 
 Route::prefix('/users')->group(function () {
-    Route::get('/', [UserController::class, 'index']);
+    Route::get('/', [UserController::class, 'index'])->name('/allusers');
     Route::get('/show/{id}', [UserController::class, 'show']);
-    Route::post('/store', [UserController::class, 'store']);
+    Route::post('/create', [UserController::class, 'create']);
     Route::put('/update/{id}', [UserController::class, 'update']);
     Route::delete('/destroy/{id}', [UserController::class, 'destroy']);
 });

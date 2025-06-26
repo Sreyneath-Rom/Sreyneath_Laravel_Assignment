@@ -3,76 +3,75 @@
 namespace App\Http\Controllers;
 
 use App\Models\Author;
+use App\Http\Requests\StoreAuthorRequest;
 use Illuminate\Http\Request;
 
 class AuthorController extends Controller
 {
     public function index()
     {
+        $authors = new Author();
         return response()->json([
-            'message' => 'Successful',
-            'data' => Author::all(),
+            'message' => 'Authors retrieved successfully',
+            'data' => $authors::all(),
         ], 200);
     }
 
-    // You can rename to 'create' if you're using custom routes
-    public function store(Request $request)
+    //create author with validation
+    public function create(StoreAuthorRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'bio' => 'required|string',
-            'nationality' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $author = Author::create($validated);
 
         return response()->json([
-            'message' => 'Author added successfully',
+            'message' => 'Author created successfully',
             'data' => $author,
         ], 201);
     }
-
-    public function show(string $id)
-    {
-        $author = Author::find($id);
-
-        if ($author) {
-            return response()->json(['message' => 'Author found', 'data' => $author], 200);
-        }
-
-        return response()->json(['message' => 'Author not found'], 404);
-    }
-
-    public function update(Request $request, string $id)
+    // Show one author
+    public function show($id)
     {
         $author = Author::find($id);
 
         if (!$author) {
-            return response()->json(['message' => 'Author not found'], 404);
+            return response()->json([
+                'message' => 'Author not found'
+            ], 404);
         }
 
+        return response()->json([
+            'message' => 'Author found',
+            'data' => $author,
+        ], 200);
+    }
+
+
+
+    // Update an author
+    public function update(Request $request, Author $author)
+    {
         $validated = $request->validate([
-            'name' => 'sometimes|required|string',
+            'name' => 'required|string|min:2|max:255',
             'bio' => 'sometimes|required|string',
             'nationality' => 'sometimes|required|string',
         ]);
 
-        $author->update($validated);
-
+        $author = Author::update($validated);
         return response()->json([
             'message' => 'Author updated successfully',
             'data' => $author,
-        ]);
+        ], 200);
+
+     
     }
 
-    public function destroy(string $id)
+
+
+
+
+    public function destroy(Author $author)
     {
-        $author = Author::find($id);
-
-        if (!$author) {
-            return response()->json(['message' => 'Author not found'], 404);
-        }
-
         $author->delete();
 
         return response()->json([

@@ -11,7 +11,7 @@ class Book extends Model
 
     protected $fillable = [
         'title',
-        'author_id',  // use underscore to match DB column
+        'author_id',
         'isbn',
         'published_year',
         'genre',

@@ -3,31 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Http\Requests\StoreUserRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::all();
+        $users = new User();
 
         return response()->json([
             'message' => 'Users retrieved successfully',
-            'data' => $users
+            'data' => $users::all(), // Retrieve all users
         ], 200);
     }
 
-    public function store(Request $request)
+    //create new user with validation
+    public function create(StoreUserRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
-
-        $validated['password'] = bcrypt($validated['password']); // encrypt password
-
+        $validated = $request->validated();
         $user = User::create($validated);
 
         return response()->json([
@@ -35,6 +30,7 @@ class UserController extends Controller
             'data' => $user,
         ], 201);
     }
+    // Show one user
 
     public function show(string $id)
     {
@@ -56,7 +52,7 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'sometimes|required|string',
+            'name' => 'required|string|min:2|max:255',
             'email' => 'sometimes|required|string|email|unique:users,email,' . $id,
             'password' => 'sometimes|required|string|min:6',
         ]);
