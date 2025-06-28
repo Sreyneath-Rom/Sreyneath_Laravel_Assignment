@@ -7,18 +7,15 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
-    // List all books with pagination
     public function index()
     {
-        $books = new Book();
+        $books = Book::with('author')->get();
         return response()->json([
             'message' => 'Books retrieved successfully',
-            'data' => $books::all(), 
+            'data' => $books,
         ], 200);
     }
 
-    // Create new book with validation
-   
     public function create(StoreBookRequest $request)
     {
         $validated = $request->validated();
@@ -30,10 +27,9 @@ class BookController extends Controller
         ], 201);
     }
 
-    // Show one book
     public function show($id)
     {
-        $book = Book::find($id);
+        $book = Book::with('author')->find($id);// Find book by ID with author relation
 
         if (!$book) {
             return response()->json(['message' => 'Book not found'], 404);
@@ -45,7 +41,6 @@ class BookController extends Controller
         ], 200);
     }
 
-    // Update a book
     public function update(Request $request, Book $book)
     {
         $validated = $request->validate([
@@ -65,7 +60,6 @@ class BookController extends Controller
         ]);
     }
 
-    // Delete a book
     public function destroy(Book $book)
     {
         $book->delete();

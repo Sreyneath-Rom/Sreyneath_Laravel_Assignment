@@ -29,8 +29,9 @@ Route::prefix('/books')->group(function(){
 
 Route::prefix('/authors')->group(function () {
     Route::get('/', [AuthorController::class, 'index'])->name('/allauthors');
+    Route::get('/show/{id}', [AuthorController::class, 'show']);
+    Route::get('/show/{id}/books', [AuthorController::class, 'showWithBooks']);// Show author with books
     Route::post('/create', [AuthorController::class, 'create']);
-    Route::get('/show/{id}', [AuthorController::class, 'show']); 
     Route::put('/update/{id}', [AuthorController::class, 'update']);
     Route::delete('/destroy/{id}', [AuthorController::class, 'destroy']);
 });

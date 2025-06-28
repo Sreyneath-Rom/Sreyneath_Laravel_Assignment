@@ -45,6 +45,20 @@ class AuthorController extends Controller
             'data' => $author,
         ], 200);
     }
+    // Show author with books
+    public function showWithBooks($id)
+    {
+        $author = Author::with('books')->find($id);
+
+        if (!$author) {
+            return response()->json(['message' => 'Author not found'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Author and books retrieved successfully',
+            'data' => $author,
+        ], 200);
+    }
 
 
 
