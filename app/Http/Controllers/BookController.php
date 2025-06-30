@@ -9,13 +9,28 @@ class BookController extends Controller
 {
     public function index()
     {
-        $books = Book::with('author')->get();
+        $books = Book::with(['author', 'categories'])->get();
         return response()->json([
             'message' => 'Books retrieved successfully',
             'data' => $books,
         ], 200);
     }
 
+    // Show one book with author and categories
+    public function show($id)
+    {
+        $book = Book::with(['author', 'categories'])->find($id);
+
+        if (!$book) {
+            return response()->json(['message' => 'Book not found'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Book found',
+            'data' => $book,
+        ], 200);
+    }
+    
     public function create(StoreBookRequest $request)
     {
         $validated = $request->validated();
@@ -27,19 +42,6 @@ class BookController extends Controller
         ], 201);
     }
 
-    public function show($id)
-    {
-        $book = Book::with('author')->find($id);// Find book by ID with author relation
-
-        if (!$book) {
-            return response()->json(['message' => 'Book not found'], 404);
-        }
-
-        return response()->json([
-            'message' => 'Book found',
-            'data' => $book,
-        ], 200);
-    }
 
     public function update(Request $request, Book $book)
     {
